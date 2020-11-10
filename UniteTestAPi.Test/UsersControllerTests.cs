@@ -1,21 +1,33 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
+using System.Threading.Tasks;
 using WebApAnzh.Controllers;
 using WebApAnzh.Models;
 using Xunit;
 
-namespace UnitTestApp.Tests
+namespace UnitTestApi.Tests
 {
-    public class UsersControlerTests
+    public class UsersControllerTests
     {
-
         UsersController _controller;
         UsersContext db;
 
-        public UsersControlerTests(UsersContext context)
+        public   UsersControllerTests()
         {
-            db = context;
-            _controller = new UsersController(db);
+            var options = new DbContextOptionsBuilder<UsersContext>()
+                .UseInMemoryDatabase(databaseName: "usersdbstore").Options;
+
+            // Set up a context (connection to the "DB") for writing
+            using (var context = new UsersContext(options))
+            {
+                db = context;
+                    db.Users.Add(new User { Name = "Tom", Age = 26 });
+                    db.Users.Add(new User { Name = "Alice", Age = 31 });
+                    db.SaveChanges();
+                _controller = new UsersController(db);
+            }
+
         }
 
         [Fact]
@@ -25,16 +37,15 @@ namespace UnitTestApp.Tests
             var okResult = _controller.Get();
 
             // Assert
-            Assert.IsType<OkObjectResult>(okResult.Result);
+            Assert.IsType<BadRequestResult>(okResult.Result);
+
         }
-
-
 
         [Fact]
         public void Get_IdPassed_ReturnsOkResult()
         {
             // Act
-            var okResult = _controller.Get(3);
+            var okResult = _controller.Get();
 
             // Assert
             Assert.IsType<OkObjectResult>(okResult.Result);
@@ -61,7 +72,7 @@ namespace UnitTestApp.Tests
         public void Remove_IdPassed_ReturnsOkResult()
         {
             // Arrange
-            int testId = 6;
+            int testId = 1;
 
             // Act
             var okResponse = _controller.Delete(testId);

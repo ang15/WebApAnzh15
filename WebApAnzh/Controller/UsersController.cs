@@ -31,11 +31,6 @@ namespace WebApAnzh.Controllers
             return await db.Users.ToListAsync();
         }
 
-        public object Get(int v, object id)
-        {
-            throw new NotImplementedException();
-        }
-
         // GET api/users/5
         [HttpGet("{id}")]
         public async Task<ActionResult<User>> Get(int id)
